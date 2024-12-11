@@ -1,6 +1,7 @@
 import express, { Application } from "express";
 import { connectDb } from "./config/db";
 import authRoutes from "./routes/authRoutes"
+import chatRoutes from "./routes/chatRoutes"
 
 const app: Application = express();
 
@@ -12,6 +13,7 @@ connectDb();
 
 // Routes
 app.use("/auth", authRoutes);
+app.use("/chat", chatRoutes);
 
 // Port
 const PORT = process.env.PORT || 3000;
