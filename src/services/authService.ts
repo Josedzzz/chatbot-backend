@@ -1,6 +1,7 @@
 import User, { IUser } from "../models/User";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
+import { errorResponse } from "../utils/response";
 
 /**
  * Handles the bussiness logic for creating a user
@@ -12,7 +13,7 @@ export const singUpService = async (userData: IUser): Promise<IUser> => {
   const hashedPassword = await bcrypt.hash(userData.password, salt);
   const user = new User({ ...userData, password: hashedPassword });
   return await user.save();
-}
+};
 
 /**
  * Handles the logic for log in a user and generating the JWT
@@ -20,19 +21,22 @@ export const singUpService = async (userData: IUser): Promise<IUser> => {
  * @param password the password provided by the user
  * @returns a promise to the created JWT token
  */
-export const loginService = async (email: string, password: string): Promise<{ token: string, user: IUser }> => {
+export const loginService = async (
+  email: string,
+  password: string,
+): Promise<{ token: string; user: IUser }> => {
   const user = await User.findOne({ email });
   if (!user) {
-    throw new Error("User not found");
+    throw errorResponse("USER_NOT_FOUND", "User not found");
   }
   const match = await bcrypt.compare(password, user.password);
   if (!match) {
-    throw new Error("Invalid password");
+    throw errorResponse("INVALID_PASSWORD", "Invalid password");
   }
   const token = jwt.sign(
     { id: user._id, email: user.email },
     process.env.JWT_SECRET || "your_jwt_secret",
-    { expiresIn: "8h" }
+    { expiresIn: "8h" },
   );
   return { token, user };
-}
+};
