@@ -1,9 +1,19 @@
 import express, { Application } from "express";
 import { connectDb } from "./config/db";
-import authRoutes from "./routes/authRoutes"
-import chatRoutes from "./routes/chatRoutes"
+import authRoutes from "./routes/authRoutes";
+import chatRoutes from "./routes/chatRoutes";
+import cors from "cors";
 
 const app: Application = express();
+
+// Cors validation
+app.use(
+  cors({
+    origin: "http://localhost:5173",
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  }),
+);
 
 // Middlewares
 app.use(express.json());
