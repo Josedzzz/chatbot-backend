@@ -28,5 +28,5 @@ app.use("/chat", chatRoutes);
 // Port
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-  console.log(`Server is running:  http://localhost/${PORT}`);
+  console.log(`Server is running:  http://localhost:${PORT}`);
 });
