@@ -1,6 +1,7 @@
 import { model } from "../config/gemini";
 import User, { IUser } from "../models/User";
 import Chat, { IChat } from "../models/Chat";
+import { errorResponse } from "../utils/response";
 
 /**
  * Retrieves the chat history of a user, creating a new chat if none exists
@@ -10,14 +11,11 @@ import Chat, { IChat } from "../models/Chat";
 export const getChatHistory = async (userId: string): Promise<IChat> => {
   try {
     const user = await findUser(userId);
-
     let userChat: IChat | null = null;
-
     if (user.chat) {
       // Retrieve the existing chat
       userChat = await Chat.findById(user.chat).exec();
     }
-
     if (!userChat) {
       // Create a new chat if none exists
       userChat = new Chat({
@@ -25,14 +23,11 @@ export const getChatHistory = async (userId: string): Promise<IChat> => {
         title: `${user.username}'s chat`,
         messages: [],
       });
-
       await userChat.save();
-
       // Link the new chat to the user
       user.chat = userChat.id;
       await user.save();
     }
-
     return userChat;
   } catch (error: any) {
     throw new Error(`Error retrieving chat history: ${error.message}`);
@@ -45,17 +40,17 @@ export const getChatHistory = async (userId: string): Promise<IChat> => {
  * @param userId The ID of the user making the request
  * @returns A promise containing the model's response
  */
-export const chatService = async (prompt: string, userId: string): Promise<string> => {
+export const chatService = async (
+  prompt: string,
+  userId: string,
+): Promise<string> => {
   try {
     const user = await findUser(userId);
-
     let userChat: IChat | null = null;
-
     if (user.chat) {
       // Retrieve the existing chat
       userChat = await Chat.findById(user.chat).exec();
     }
-
     if (!userChat) {
       // Create a new chat if none exists
       userChat = new Chat({
@@ -63,40 +58,33 @@ export const chatService = async (prompt: string, userId: string): Promise<strin
         title: `${user.username}'s chat`,
         messages: [],
       });
-
       await userChat.save();
-
       // Link the new chat to the user
       user.chat = userChat.id;
       await user.save();
     }
-
     // Initialize Gemini chat
     const chat = model.startChat({
       history: userChat
         ? userChat.messages.map((msg) => ({
-          role: msg.sender === "user" ? "user" : "model", // Map user to 'user' role and bot to 'model'
-          parts: [{ text: msg.message }], // Wrap the message in 'parts' with a 'text' field
-        }))
+            role: msg.sender === "user" ? "user" : "model", // Map user to 'user' role and bot to 'model'
+            parts: [{ text: msg.message }], // Wrap the message in 'parts' with a 'text' field
+          }))
         : [], // If no chat exists, start with an empty history
       generationConfig: {
         maxOutputTokens: 100,
       },
     });
-
     // Send the message to Gemini
     const result = await chat.sendMessage(prompt);
     const response = result.response;
     const botMessage = response.text();
-
     // Update the chat with the new messages
     userChat.messages.push(
       { sender: "user", message: prompt, timestamp: new Date() },
-      { sender: "bot", message: botMessage, timestamp: new Date() }
+      { sender: "bot", message: botMessage, timestamp: new Date() },
     );
-
     await userChat.save();
-
     return botMessage;
   } catch (error: any) {
     throw new Error(`Gemini API error: ${error.message}`);
@@ -111,17 +99,13 @@ export const chatService = async (prompt: string, userId: string): Promise<strin
 export const clearHistory = async (userId: string): Promise<void> => {
   try {
     const user = await findUser(userId);
-
     if (!user.chat) {
       throw new Error("No chat found for the user.");
     }
-
     const userChat = await Chat.findById(user.chat).exec();
-
     if (!userChat) {
-      throw new Error("Chat not found.");
+      throw errorResponse("CHAT_NOT_FOUND", "Chat not found.");
     }
-
     // Clear the messages
     userChat.messages = [];
     await userChat.save();
@@ -138,7 +122,8 @@ export const clearHistory = async (userId: string): Promise<void> => {
 const findUser = async (userId: string): Promise<IUser> => {
   try {
     const user = await User.findById(userId).exec();
-    if (!user) throw new Error("User not registered");
+    if (!user)
+      throw errorResponse("USER_NOT_REGISTERED", "User not registered");
     return user;
   } catch (error: any) {
     throw new Error(`UserId error: ${error.message}`);
