@@ -15,7 +15,6 @@ pnpm-debug.log*
 .DS_Store
 
 # TypeScript
-dist/
 *.tsbuildinfo
 
 # Environment files
