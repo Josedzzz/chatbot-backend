@@ -7,9 +7,20 @@ import cors from "cors";
 const app: Application = express();
 
 // Cors validation
+const allowedOrigins = [
+  "http://localhost:5173",
+  "https://chatbot-frontend-rnhk.vercel.app",
+];
+
 app.use(
   cors({
-    origin: "https://chatbot-frontend-rnhk.vercel.app",
+    origin: (origin, callback) => {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Not allowed by CORS"));
+      }
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
     credentials: true,
   }),
