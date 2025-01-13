@@ -10,6 +10,7 @@ const app: Application = express();
 const allowedOrigins = [
   "http://localhost:5173",
   "https://chatbot-frontend-seven-theta.vercel.app",
+  "http://chatbot-frontend-seven-theta.vercel.app/login",
 ];
 
 app.use(
