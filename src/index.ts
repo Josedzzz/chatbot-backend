@@ -15,9 +15,13 @@ const app: Application = express();
 
 app.use(
   cors({
-    origin: true,
+    origin: (origin, callback) => {
+      // Allow all origins for now, with a console log to debug the request origin
+      console.log(`Incoming Origin: ${origin}`);
+      callback(null, true);
+    },
     methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true,
+    credentials: true, // Allows cookies if needed
   }),
 );
 
