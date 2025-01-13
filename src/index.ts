@@ -7,25 +7,12 @@ import cors from "cors";
 const app: Application = express();
 
 // Cors validation
-/* const allowedOrigins = [
-  "http://localhost:5173",
-  "https://chatbot-frontend-seven-theta.vercel.app",
-  "http://chatbot-frontend-seven-theta.vercel.app/login",
-]; */
-
 app.use(
   cors({
-    origin: (origin, callback) => {
-      // Allow all origins for now, with a console log to debug the request origin
-      console.log(`Incoming Origin: ${origin}`);
-      callback(null, true);
-    },
-    methods: ["GET", "POST", "PUT", "DELETE"],
-    credentials: true, // Allows cookies if needed
+    origin: "https://chatbot-frontend-seven-theta.vercel.app/login",
+    credentials: true,
   }),
 );
-
-app.options("*", cors());
 
 // Middlewares
 app.use(express.json());
